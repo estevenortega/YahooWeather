@@ -28,15 +28,13 @@ public class ForecastArrayAdapter extends ArrayAdapter <Object> {
     public ForecastArrayAdapter(Activity context, int resource) {
         super(context, resource);
         parentContext = context;
-        forecastList = new ArrayList<Forecast>(); // make an empty
+        forecastList = new ArrayList<>(); // make an empty
     }
 
     void setForecast(List<Forecast> forecastList )
     {
         this.forecastList = forecastList;
     }
-
-
 
 
     public int getCount() {
@@ -53,8 +51,7 @@ public class ForecastArrayAdapter extends ArrayAdapter <Object> {
 
     public int getItemViewType(int position) {
         // For now we only have one item type
-        int returnVal = 0;
-        return returnVal;
+        return 0;
     }
     public void setForecastViewListener(ForecastViewListener forecastViewListener)
     {
@@ -63,19 +60,23 @@ public class ForecastArrayAdapter extends ArrayAdapter <Object> {
 
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        //inflate the custom view layout
-        View forecastView = LayoutInflater.from(parentContext).inflate(R.layout.forcast_cell_layout,null);
+        ForecastCellView forecastView;
+
+        // check to see if we already have a ForecastView, if not create one.
+        if(convertView != null && convertView instanceof ForecastCellView)
+        {
+            forecastView = (ForecastCellView)convertView;
+        }
+        else {
+
+            forecastView = new ForecastCellView(parentContext);
+        }
         Forecast forecast = forecastList.get(position);
+        forecastView.setDay(forecast.getDay());
+        forecastView.setDate(forecast.getDate());
+        forecastView.setHigh(forecast.getHigh());
+        forecastView.setLow(forecast.getLow());
 
-        TextView dayView = (TextView) forecastView.findViewById(R.id.forecastDayTextView);
-        TextView dateView = (TextView) forecastView.findViewById(R.id.forecastDateTextView);
-        TextView highView = (TextView) forecastView.findViewById(R.id.forecastHighTextView);
-        TextView lowView = (TextView) forecastView.findViewById(R.id.foreCastLowTextView);
-
-        dayView.setText(forecast.getDay());
-        dateView.setText(forecast.getDate());
-        highView.setText(forecast.getHigh());
-        lowView.setText(forecast.getLow());
 
         final int fPosition = position;
         forecastView.setOnClickListener(new View.OnClickListener() {

@@ -12,10 +12,8 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.zubilay.yahooweather.model.GsonRequest;
 import com.zubilay.yahooweather.model.MySingleton;
 import com.zubilay.yahooweather.model.POJO.Astronomy;
@@ -24,11 +22,8 @@ import com.zubilay.yahooweather.model.POJO.Condition;
 import com.zubilay.yahooweather.model.POJO.Forecast;
 import com.zubilay.yahooweather.model.POJO.WeatherData;
 import com.zubilay.yahooweather.model.POJO.Wind;
-
-import org.json.JSONObject;
-
-import java.lang.reflect.Array;
-import java.net.URLEncoder;
+import com.zubilay.yahooweather.model.YahooWeatherConversionUtils;
+import com.zubilay.yahooweather.model.YahooWeatherEndpointBuilder;
 import java.util.List;
 
 public class YahooWeatherMainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -46,23 +41,17 @@ public class YahooWeatherMainActivity extends AppCompatActivity implements Adapt
     ForecastArrayAdapter adapter;
     WeatherData wd;
     String[] cityNameArray;
-    String[] dirArray = {"N","NNE","NE","ENE","E","ESE", "SE", "SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"};
 
-    //String defaultCityString = "nome%2c%20ak";
     String defaultCityString = "nome, ak";
+    YahooWeatherEndpointBuilder yahooWeatherEndpointBuilder;
+    YahooWeatherConversionUtils yahooWeatherConversionUtils;
 
-    String baseURLString = "https://query.yahooapis.com/";
-
-    String restRoute = "v1/public/yql?";
-    String queryBegin = "q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22";
-    String queryEnd = "%22)&format=json&env=store://datatables.org/alltableswithkeys";
-
-    String yahooApi = "https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22ogden%2c%20ut%22)&format=json&env=store://datatables.org/alltableswithkeys";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_yahoo_weather_main);
-
+        yahooWeatherEndpointBuilder = new YahooWeatherEndpointBuilder();
+        yahooWeatherConversionUtils = new YahooWeatherConversionUtils();
 
         locationTextView = (TextView) findViewById(R.id.landingTextView);
         temperatureTextView = (TextView) findViewById(R.id.currentTemperatureTextView);
@@ -74,13 +63,14 @@ public class YahooWeatherMainActivity extends AppCompatActivity implements Adapt
         sunriseTextView = (TextView) findViewById(R.id.sunriseTextView);
         sunsetTextView = (TextView) findViewById(R.id.sunsetTextView);
 
-
         adapter = new ForecastArrayAdapter(this,0);
         listView = (ListView) findViewById(R.id.forecastListView);
         listView.setAdapter(adapter);
         listView.setDivider(null);
-        GsonRequest jsObjRequest;
 
+        // The listener for when a user touches a row.
+        // since the data is not large and not changing dynamically for forecasts
+        // we will pass it along in an intent
         adapter.setForecastViewListener(new ForecastViewListener() {
             @Override
             public void onForecastViewTouched(View v, long position) {
@@ -105,6 +95,9 @@ public class YahooWeatherMainActivity extends AppCompatActivity implements Adapt
 
 
         //spinner for the various towns
+        // I suppose I could let the users enter their own choices, that would make injection attacks easier
+        // In this case it's yahoos problem not mine, but still.
+
         // spinner
         Spinner spinner = (Spinner) findViewById(R.id.weatherSpinner);
 
@@ -117,39 +110,9 @@ public class YahooWeatherMainActivity extends AppCompatActivity implements Adapt
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
 
-        requestWeatherData(setCity(defaultCityString));
-/*
-        jsObjRequest = new GsonRequest(yahooApi,WeatherData.class ,null, new Response.Listener<WeatherData>() {
-
-            @Override
-            public void onResponse(WeatherData response) {
-                wd = response;
-                updateDisplay();
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                // If we don't get anything we  won't  update the display.
-            }
-        });
-        MySingleton.getInstance(this).addToRequestQueue(jsObjRequest);
-*/
+        requestWeatherData(yahooWeatherEndpointBuilder.setCity(defaultCityString));
     }
 
-    String setCity(String city)
-    {
-        try {
-            city = URLEncoder.encode(city, "utf-8");
-            Log.e("yWA", "what did w emake " + city);
-        }
-        catch (Exception e)
-        {
-            // looks like we could not convert the city
-        }
-
-        return baseURLString + restRoute + queryBegin + city + queryEnd;
-    }
     void requestWeatherData(String yahooAPIString)
     {
 
@@ -167,8 +130,8 @@ public class YahooWeatherMainActivity extends AppCompatActivity implements Adapt
                 // If we don't get anything we  won't  update the display.
             }
         });
-        MySingleton.getInstance(this).addToRequestQueue(jsObjRequest);
 
+            MySingleton.getInstance(this).addToRequestQueue(jsObjRequest);
 
 
 
@@ -189,18 +152,14 @@ public class YahooWeatherMainActivity extends AppCompatActivity implements Adapt
         visibilityTextView.setText(atmosphere.getVisibility());
 
         Wind wind =  wd.getQuery().getResults().getChannel().getWind();
-        Double index = ((Integer.valueOf(wind.getDirection()) / 22.5 ) + 0.5);
-        String windText =  dirArray[index.intValue()] + " " + wind.getSpeed();
+        String windText =   yahooWeatherConversionUtils.getDirectionAsString(wind.getDirection()) + " "  + wind.getSpeed();
         windSpeedTextView.setText(windText);
-
 
 
 
         Astronomy astronomy = wd.getQuery().getResults().getChannel().getAstronomy();
         sunriseTextView.setText(astronomy.getSunrise());
         sunsetTextView.setText(astronomy.getSunset());
-
-
 
 
         List<Forecast> forecast = wd.getQuery().getResults().getChannel().getItem().getForecast();
@@ -214,7 +173,7 @@ public class YahooWeatherMainActivity extends AppCompatActivity implements Adapt
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
-        requestWeatherData(setCity(cityNameArray[i]));
+        requestWeatherData(yahooWeatherEndpointBuilder.setCity(cityNameArray[i]));
 
     }
 

@@ -1,5 +1,9 @@
 package com.zubilay.yahooweather;
-
+/**
+ * Created by Esteven on 9/10/2016.
+ *
+ * Activity for the details of the forecasts
+ */
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -36,8 +40,6 @@ public class ForecastDetailActivity extends AppCompatActivity {
         highTextView.setText( intent.getStringExtra("HIGH"));
         lowTextView.setText( intent.getStringExtra("LOW"));
         conditionsTextView.setText( intent.getStringExtra("CONDITIONS"));
-        ;
-
 
 
     }
