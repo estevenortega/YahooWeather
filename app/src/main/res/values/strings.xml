@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">YahooWeather</string>
+    <string name="weather_for_location_string">Yahoo! Weather for Some City, ST</string>
+    <string name="temperature_string">100</string>
+    <string name="condition_string">Clear</string>
+    <string name="humidity_string">18</string>
+    <string name="pressure_label_string">Pressure</string>
+    <string name="pressure_string">1000.00</string>
+    <string name="humidity_label_string">Humidity</string>
+    <string name="conditions_label">Conditions</string>
+    <string name="forcast_day_string">Day</string>
+    <string name="forcast_date_text">DD Mon YYYY</string>
+    <string name="forcast_high_label">High</string>
+    <string name="forcast_high_string">100</string>
+    <string name="forcast_low_label">Low</string>
+    <string name="forcast_low_string">-100</string>
+    <string name="forcast_date_label">Date</string>
+    <string name="choose_city_label">Choose City</string>
+    <string name="visibility_label_string">Visibility</string>
+    <string name="visibility_string">100.2</string>
+    <string name="wind_speed_label">Wind</string>
+    <string name="wind_string">125</string>
+    <string name="sunrise_label">Sunrise</string>
+    <string name="sunrise_string">11:00</string>
+    <string name="sunset_label">Sunset</string>
+    <string name="sunset_string">12:00</string>
+    <string name="back_button_text"><![CDATA[<- Back]]></string>
+</resources>

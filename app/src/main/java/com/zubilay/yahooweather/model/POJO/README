@@ -1,0 +1,2 @@
+In order to save time I used the tool at http://www.jsonschema2pojo.org/ to convert the JSON into Java classes.
+I commented some of the annotations out.
